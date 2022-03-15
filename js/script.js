@@ -75,6 +75,7 @@ window.addEventListener("DOMContentLoaded", () => {
 
 		//создаем условие. Если target(элемент по которому мы кликнули существует) &&(и) target.classList.contains("tabheader__item")(элемент по которому мы кликнули имеет класс "tabheader__item" - класс нашей кнопки) то...
 		if (target && target.classList.contains("tabheader__item")) {
+			clearInterval(timerId) // отключаем слайдер после нажатия на кнопки
 			//перебираем наши кнопки, выводим каждую кнопку и ее индекс
 			tabs.forEach((tab, index) => {
 				//условие: если tab(кнопка которую мы получили после перебора) ==(равен) target(элемент по которому мы кликнули) то...
@@ -85,4 +86,18 @@ window.addEventListener("DOMContentLoaded", () => {
 			})
 		}
 	})
+
+	let counter = 0 //создаем счетчик для слайдера
+	//создаем интервал
+	const timerId = setInterval(() => {
+		//условие: если счетчик будет равен 4, то присваиваем счетчику 0 и начинаем слайдер с перовго слайда
+		if (counter == 4) {
+			//проверка
+			counter = 0 //присваивание
+		}
+
+		hideTabContent() //запуск функции по скрытию табов
+		showTabContent(counter) //функция по показу табов, принмает значение счетчика
+		counter++ //увеличиваем счетчик на 1
+	}, 2000) //интервал 2 сек
 })
