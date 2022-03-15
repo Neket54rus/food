@@ -198,3 +198,23 @@ window.addEventListener("DOMContentLoaded", () => {
 	}
 	setClock(".timer", deadline) //запуск таймера
 })
+
+//модальное окно
+const modalWindow = document.querySelector(".modal") //получаем модальное окно со страницы
+const modalBtn = document.querySelectorAll("[data-modal]") //получаем кнопки для открытия модального окна
+
+//перебираем все кнопки выводим каждую отдельно
+modalBtn.forEach((btn) => {
+	//на каждую кнопку навешиваем клик
+	btn.addEventListener("click", () => {
+		modalWindow.style.display = "block" //устанавилваем модальному окну display в block тем самым показываем модальное окно
+	})
+})
+
+//навешиваем обработчик клика на модальное окно
+modalWindow.addEventListener("click", (e) => {
+	//условие: если элемент на который мы нажали имеет класс modal или modal__close, то закрываем модальное окно
+	if (e.target.classList.contains("modal") || e.target.classList.contains("modal__close")) {
+		modalWindow.style.display = "none"
+	}
+})
