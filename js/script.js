@@ -1,3 +1,4 @@
+"use strict"
 // // табы Никита
 // const tabs = document.querySelectorAll(".tabcontent") //получаем табы со страницы
 // const tabsBtn = document.querySelectorAll(".tabheader__item") //получаем кнопки для переключения табов
@@ -245,4 +246,92 @@ window.addEventListener("DOMContentLoaded", () => {
 	}
 
 	window.addEventListener("scroll", showModalByScroll)
+
+	// // Модалньное окно с помощью функции-конструктора
+	// function Modal(modalSelector, btnSelector, closeBtnSelector) {
+	// 	this.modal = document.querySelector(modalSelector)
+	// 	this.btn = document.querySelectorAll(btnSelector)
+	// 	this.closeBtn = document.querySelector(closeBtnSelector)
+
+	// 	this.openModal = function () {
+	// 		this.btn.forEach((btn) => {
+	// 			btn.addEventListener("click", () => {
+	// 				this.modal.style.display = "block"
+	// 				document.body.style.overflow = "hidden"
+	// 			})
+	// 		})
+	// 	}
+
+	// 	this.closeModal = function () {
+	// 		this.closeBtn.addEventListener("click", () => {
+	// 			this.modal.style.display = "none"
+	// 			document.body.style.overflow = ""
+	// 		})
+	// 	}
+
+	// 	this.init = function () {
+	// 		this.openModal()
+	// 		this.closeModal()
+	// 	}
+	// }
+
+	// const modal1 = new Modal(".modal", "[data-modal]", ".modal__close")
+	// modal1.init()
+
+	//Создание карточек с помощью классов
+	class Card {
+		constructor(img, title, descr, price, parentSelector) {
+			this.img = img
+			this.title = title
+			this.descr = descr
+			this.price = price
+			this.parent = document.querySelector(parentSelector)
+			this.changeUsd()
+		}
+
+		changeUsd() {
+			this.price = this.price * 100
+		}
+
+		createCard() {
+			this.parent.innerHTML += `
+				<div class="menu__item">
+					<img src="${this.img}" alt="vegy" />
+					<h3 class="menu__item-subtitle">${this.title}</h3>
+					<div class="menu__item-descr">
+						${this.descr}
+					</div>
+					<div class="menu__item-divider"></div>
+					<div class="menu__item-price">
+						<div class="menu__item-cost">Цена:</div>
+						<div class="menu__item-total"><span>${this.price}</span> руб/день</div>
+					</div>
+				</div>
+			`
+		}
+	}
+
+	const card1 = new Card(
+		"img/tabs/vegy.jpg",
+		'Меню "Фитнес"',
+		'Меню "Фитнес" - это новый подход к приготовлению блюд: больше свежих овощей и фруктов. Продукт активных и здоровых людей. Это абсолютно новый продукт с оптимальной ценой и высоким качеством!',
+		9,
+		".menu__field .container"
+	).createCard()
+
+	const card2 = new Card(
+		"img/tabs/elite.jpg",
+		"Меню “Премиум”",
+		"В меню “Премиум” мы используем не только красивый дизайн упаковки, но и качественное исполнение блюд. Красная рыба, морепродукты, фрукты - ресторанное меню без похода в ресторан!",
+		15,
+		".menu__field .container"
+	).createCard()
+
+	const card3 = new Card(
+		"img/tabs/post.jpg",
+		'Меню "Постное"',
+		"Меню “Постное” - это тщательный подбор ингредиентов: полное отсутствие продуктов животного происхождения, молоко из миндаля, овса, кокоса или гречки, правильное количество белков за счет тофу и импортных вегетарианских стейков.",
+		12,
+		".menu__field .container"
+	).createCard()
 })
