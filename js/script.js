@@ -217,7 +217,7 @@ window.addEventListener("DOMContentLoaded", () => {
 	//навешиваем обработчик клика на модальное окно
 	modalWindow.addEventListener("click", (e) => {
 		//условие: если элемент на который мы нажали имеет класс modal или modal__close, то закрываем модальное окно
-		if (e.target == modalWindow || e.target == modalCloseBtn) {
+		if (e.target == modalWindow || e.target == modalCloseBtn || e.target.classList.contains("modal__close")) {
 			modalWindow.style.display = "none" //показываем модальное окно
 			document.body.style.overflow = "" //включаем возможность прокрутки
 		}
@@ -359,10 +359,20 @@ window.addEventListener("DOMContentLoaded", () => {
 		form.addEventListener("submit", (e) => {
 			e.preventDefault() //убираем перезагрузку страницы
 
-			const answer = document.createElement("div") //создаем блок, в который будет помещен ответ
-			answer.classList.add("status") //добавляем этому блоку сласс
-			answer.textContent = message.load // добавляем в блок текст, оповещайющий пользователя о загрузки
-			form.append(answer) //помещаем ответ в конце формы
+			modalWindow.style.display = "none" //показываем модальное окно
+			document.body.style.overflow = "" //включаем возможность прокрутки
+
+			modalWindow.querySelector(".modal__dialog").style.display = "none"
+			const answ = document.createElement("div")
+			answ.classList.add("modal__dialog")
+			answ.innerHTML = `
+				<div class="modal__content">
+					<img src="img/spinner.svg" alt="">
+				</div>
+			`
+			modalWindow.append(answ)
+			modalWindow.style.display = "block" //показываем модальное окно
+			document.body.style.overflow = "hidden" //включаем возможность прокрутки
 
 			const responsive = new XMLHttpRequest() //создаем запрос
 
@@ -380,19 +390,30 @@ window.addEventListener("DOMContentLoaded", () => {
 			responsive.addEventListener("load", () => {
 				// условие: если статус хапроса будет равен 200, то
 				if (responsive.status === 200) {
-					answer.textContent = message.success // помещаем в блок ответ с успешной отправкой
+					answ.innerHTML = `
+						<div class="modal__content">
+							<div class="modal__close">&times;</div>
+							<div class="modal__title">${message.success}</div>
+						</div>
+					`
 					console.log(responsive.response) // показываем данные в консоле
 					form.reset() // очищаем форму
 				} else {
 					// если нет, то
-					answer.textContent = message.fail //помещаем в блок ответ с ошибкой
+					answ.innerHTML = `
+						<div class="modal__content">
+							<div class="modal__title">${message.fail}</div>
+						</div>
+					`
 					form.reset() // очищаем форму
 				}
 			})
 
 			//удаляем блок с ответом через 2 сек
 			setTimeout(() => {
-				answer.remove()
+				answ.remove()
+
+				modalWindow.querySelector(".modal__dialog").style.display = "block"
 			}, 2000)
 		})
 	}
