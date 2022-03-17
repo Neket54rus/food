@@ -279,21 +279,26 @@ window.addEventListener("DOMContentLoaded", () => {
 	// modal1.init()
 
 	//Создание карточек с помощью классов
+	//создание класса
 	class Card {
+		//конструктор принимает в себя пусть к фото, заголовок, описание, цену и селектор родителя
 		constructor(img, title, descr, price, parentSelector) {
-			this.img = img
-			this.title = title
-			this.descr = descr
-			this.price = price
-			this.parent = document.querySelector(parentSelector)
-			this.changeUsd()
+			this.img = img //получаем путь
+			this.title = title //получаем заголовок
+			this.descr = descr //получаем описание
+			this.price = price //получаем цену
+			this.parent = document.querySelector(parentSelector) //получаем родителя
+			this.changeUsd() //функция по переводу из usd в rub
 		}
 
+		//метод по переводу из usd в rub
 		changeUsd() {
-			this.price = this.price * 100
+			this.price = this.price * 100 //нашу цену умножаем на 100 и записываем в нашу цену
 		}
 
+		//метод по созданию сарты
 		createCard() {
+			//вставляем в родителя нашу верстку
 			this.parent.innerHTML += `
 				<div class="menu__item">
 					<img src="${this.img}" alt="vegy" />
@@ -311,6 +316,7 @@ window.addEventListener("DOMContentLoaded", () => {
 		}
 	}
 
+	//создаем первую карту
 	const card1 = new Card(
 		"img/tabs/vegy.jpg",
 		'Меню "Фитнес"',
@@ -319,6 +325,7 @@ window.addEventListener("DOMContentLoaded", () => {
 		".menu__field .container"
 	).createCard()
 
+	//создаем вторую карту
 	const card2 = new Card(
 		"img/tabs/elite.jpg",
 		"Меню “Премиум”",
@@ -327,6 +334,7 @@ window.addEventListener("DOMContentLoaded", () => {
 		".menu__field .container"
 	).createCard()
 
+	//создаем вторую карту
 	const card3 = new Card(
 		"img/tabs/post.jpg",
 		'Меню "Постное"',
@@ -334,4 +342,63 @@ window.addEventListener("DOMContentLoaded", () => {
 		12,
 		".menu__field .container"
 	).createCard()
+
+	// отправка с формы
+	const forms = document.querySelectorAll("form") // получение всех форм на странице
+
+	//содаем объект с ответами для пользователя
+	const message = {
+		load: "Загрузка...",
+		success: "Спасибо! Мы скоро с вами свяжемся!",
+		fail: "Произошла ошибка, попробуйте позже(",
+	}
+
+	//функция отправки данных. Функция принимает в себя форму, с которой нужно отправить данные
+	function postForm(form) {
+		//устанавливаем обраотчик на кнопку отправки формы
+		form.addEventListener("submit", (e) => {
+			e.preventDefault() //убираем перезагрузку страницы
+
+			const answer = document.createElement("div") //создаем блок, в который будет помещен ответ
+			answer.classList.add("status") //добавляем этому блоку сласс
+			answer.textContent = message.load // добавляем в блок текст, оповещайющий пользователя о загрузки
+			form.append(answer) //помещаем ответ в конце формы
+
+			const responsive = new XMLHttpRequest() //создаем запрос
+
+			responsive.open("POST", "server.php") // настраиваем запрос
+			const formData = new FormData(form) //создаем объект со значениями из формы
+			// //настройки для отправки в json формате
+			// const obj = {}
+			// formData.forEach((value, key) => {
+			// 	obj[key] = value
+			// })
+			// responsive.send(JSON.stringify(obj))
+			responsive.send(formData) //отправляем этот объект
+
+			// устанавливаем обраотчик на загрузку запроса
+			responsive.addEventListener("load", () => {
+				// условие: если статус хапроса будет равен 200, то
+				if (responsive.status === 200) {
+					answer.textContent = message.success // помещаем в блок ответ с успешной отправкой
+					console.log(responsive.response) // показываем данные в консоле
+					form.reset() // очищаем форму
+				} else {
+					// если нет, то
+					answer.textContent = message.fail //помещаем в блок ответ с ошибкой
+					form.reset() // очищаем форму
+				}
+			})
+
+			//удаляем блок с ответом через 2 сек
+			setTimeout(() => {
+				answer.remove()
+			}, 2000)
+		})
+	}
+
+	//перебираем се формы на странице и запускаем функцию на каждую из них
+	forms.forEach((item) => {
+		postForm(item)
+	})
 })
