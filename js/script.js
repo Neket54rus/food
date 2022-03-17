@@ -348,9 +348,41 @@ window.addEventListener("DOMContentLoaded", () => {
 
 	//содаем объект с ответами для пользователя
 	const message = {
-		load: "Загрузка...",
+		load: "img/form/spinner.svg",
 		success: "Спасибо! Мы скоро с вами свяжемся!",
 		fail: "Произошла ошибка, попробуйте позже(",
+	}
+
+	//Функция по показу модального окна после отправки. Функция принимает в себя сообщение для пользователя
+	function showThanksModal(message) {
+		const prevModalDialog = document.querySelector(".modal__dialog") //получаем внутренности модального окна
+
+		prevModalDialog.classList.add("hide") //скрываем его
+		modalWindow.style.display = "block" //устанавилваем модальному окну display в block тем самым показываем модальное окно
+		document.body.style.overflow = "hidden" //убираем возможность прокрутки
+
+		//создаем блок для текста
+		const thanksModal = document.createElement("div")
+		thanksModal.classList.add("modal__dialog") //даем класс как у внутреннего модального окна
+		//вставляем верствку
+		thanksModal.innerHTML = `
+			<div class="modal__content">
+				<div class="modal__close">&times;</div>
+				<div class="modal__title">${message}</div>
+			</div>
+		`
+
+		document.querySelector(".modal").append(thanksModal) //вставляем в модальное окно
+
+		// таймер на удаление модального окна
+		setTimeout(() => {
+			thanksModal.remove()
+			prevModalDialog.classList.remove("hide")
+			prevModalDialog.classList.add("show")
+
+			modalWindow.style.display = "none" //показываем модальное окно
+			document.body.style.overflow = "" //включаем возможность прокрутки
+		}, 4000)
 	}
 
 	//функция отправки данных. Функция принимает в себя форму, с которой нужно отправить данные
@@ -359,62 +391,43 @@ window.addEventListener("DOMContentLoaded", () => {
 		form.addEventListener("submit", (e) => {
 			e.preventDefault() //убираем перезагрузку страницы
 
-			modalWindow.style.display = "none" //показываем модальное окно
-			document.body.style.overflow = "" //включаем возможность прокрутки
-
-			modalWindow.querySelector(".modal__dialog").style.display = "none"
-			const answ = document.createElement("div")
-			answ.classList.add("modal__dialog")
-			answ.innerHTML = `
-				<div class="modal__content">
-					<img src="img/spinner.svg" alt="">
-				</div>
+			// создаем переменную со спиннером
+			const statusMessage = document.createElement("img")
+			// присваиваем путь к спиннеру
+			statusMessage.src = message.load
+			//ставим по центру
+			statusMessage.style.cssText = `
+				display: block;
+				margin: 0 auto;
 			`
-			modalWindow.append(answ)
-			modalWindow.style.display = "block" //показываем модальное окно
-			document.body.style.overflow = "hidden" //включаем возможность прокрутки
+			//вставляем в форму
+			form.insertAdjacentElement("afterend", statusMessage)
 
-			const responsive = new XMLHttpRequest() //создаем запрос
-
-			responsive.open("POST", "server.php") // настраиваем запрос
 			const formData = new FormData(form) //создаем объект со значениями из формы
-			// //настройки для отправки в json формате
+			// настройки для json
 			// const obj = {}
 			// formData.forEach((value, key) => {
 			// 	obj[key] = value
 			// })
-			// responsive.send(JSON.stringify(obj))
-			responsive.send(formData) //отправляем этот объект
 
-			// устанавливаем обраотчик на загрузку запроса
-			responsive.addEventListener("load", () => {
-				// условие: если статус хапроса будет равен 200, то
-				if (responsive.status === 200) {
-					answ.innerHTML = `
-						<div class="modal__content">
-							<div class="modal__close">&times;</div>
-							<div class="modal__title">${message.success}</div>
-						</div>
-					`
-					console.log(responsive.response) // показываем данные в консоле
-					form.reset() // очищаем форму
-				} else {
-					// если нет, то
-					answ.innerHTML = `
-						<div class="modal__content">
-							<div class="modal__title">${message.fail}</div>
-						</div>
-					`
-					form.reset() // очищаем форму
-				}
+			//создаем запрос черезе fetch, подключаемся к server.php
+			fetch("server.php", {
+				method: "POST", // метод отправки
+				body: formData, // передаем объект со значениями в форме
+				// body: JSON.stringify(obj) // // настройки для json
 			})
-
-			//удаляем блок с ответом через 2 сек
-			setTimeout(() => {
-				answ.remove()
-
-				modalWindow.querySelector(".modal__dialog").style.display = "block"
-			}, 2000)
+				.then((response) => response.text()) //при положительном ответе переводим ответ в текст
+				.then((response) => {
+					console.log(response) // показываем данные в консоле
+					showThanksModal(message.success) //показываем модальное окно с успехом
+					statusMessage.remove() //удаляем модальное окно с спинером
+				})
+				.catch(() => {
+					showThanksModal(message.fail) // при ошибке выводим блок с ошибкой
+				})
+				.finally(() => {
+					form.reset() // в любом случае обнуляем форму
+				})
 		})
 	}
 
