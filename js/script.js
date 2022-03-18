@@ -316,32 +316,21 @@ window.addEventListener("DOMContentLoaded", () => {
 		}
 	}
 
-	//создаем первую карту
-	const card1 = new Card(
-		"img/tabs/vegy.jpg",
-		'Меню "Фитнес"',
-		'Меню "Фитнес" - это новый подход к приготовлению блюд: больше свежих овощей и фруктов. Продукт активных и здоровых людей. Это абсолютно новый продукт с оптимальной ценой и высоким качеством!',
-		9,
-		".menu__field .container"
-	).createCard()
+	const getResource = async (url) => {
+		const res = await fetch(url)
 
-	//создаем вторую карту
-	const card2 = new Card(
-		"img/tabs/elite.jpg",
-		"Меню “Премиум”",
-		"В меню “Премиум” мы используем не только красивый дизайн упаковки, но и качественное исполнение блюд. Красная рыба, морепродукты, фрукты - ресторанное меню без похода в ресторан!",
-		15,
-		".menu__field .container"
-	).createCard()
+		if (!res.ok) {
+			throw new Error(`Could not fetch ${url}, status: ${res.status}`)
+		}
 
-	//создаем вторую карту
-	const card3 = new Card(
-		"img/tabs/post.jpg",
-		'Меню "Постное"',
-		"Меню “Постное” - это тщательный подбор ингредиентов: полное отсутствие продуктов животного происхождения, молоко из миндаля, овса, кокоса или гречки, правильное количество белков за счет тофу и импортных вегетарианских стейков.",
-		12,
-		".menu__field .container"
-	).createCard()
+		return await res.json()
+	}
+
+	getResource("http://localhost:3000/menu").then((res) => {
+		res.forEach(({ img, title, descr, price }) => {
+			new Card(img, title, descr, price, ".menu__field .container").createCard()
+		})
+	})
 
 	// отправка с формы
 	const forms = document.querySelectorAll("form") // получение всех форм на странице
@@ -385,6 +374,18 @@ window.addEventListener("DOMContentLoaded", () => {
 		}, 4000)
 	}
 
+	const postData = async (url, data) => {
+		const res = await fetch(url, {
+			method: "POST",
+			headers: {
+				"Content-type": "application/json",
+			},
+			body: data,
+		})
+
+		return await res.json()
+	}
+
 	//функция отправки данных. Функция принимает в себя форму, с которой нужно отправить данные
 	function postForm(form) {
 		//устанавливаем обраотчик на кнопку отправки формы
@@ -405,18 +406,9 @@ window.addEventListener("DOMContentLoaded", () => {
 
 			const formData = new FormData(form) //создаем объект со значениями из формы
 			// настройки для json
-			// const obj = {}
-			// formData.forEach((value, key) => {
-			// 	obj[key] = value
-			// })
+			const json = JSON.stringify(Object.fromEntries(formData.entries()))
 
-			//создаем запрос черезе fetch, подключаемся к server.php
-			fetch("server.php", {
-				method: "POST", // метод отправки
-				body: formData, // передаем объект со значениями в форме
-				// body: JSON.stringify(obj) // // настройки для json
-			})
-				.then((response) => response.text()) //при положительном ответе переводим ответ в текст
+			postData("http://localhost:3000/requests", json)
 				.then((response) => {
 					console.log(response) // показываем данные в консоле
 					showThanksModal(message.success) //показываем модальное окно с успехом
@@ -434,5 +426,103 @@ window.addEventListener("DOMContentLoaded", () => {
 	//перебираем се формы на странице и запускаем функцию на каждую из них
 	forms.forEach((item) => {
 		postForm(item)
+	})
+
+	//Слайдер Никита
+	// const nextBtn = document.querySelector(".offer__slider-next")
+	// const prevBtn = document.querySelector(".offer__slider-prev")
+	// const currentSlideNumber = document.querySelector("#current")
+	// const slides = document.querySelectorAll(".offer__slide")
+	// let slideIndex = 3
+
+	// document.querySelector("#total").textContent = getZero(slides.length)
+
+	// function plusSlide() {
+	// 	if (slideIndex >= slides.length) {
+	// 		slideIndex = 0
+	// 	}
+	// 	slideIndex++
+	// 	currentSlideNumber.textContent = getZero(slideIndex)
+	// 	hideSlide()
+	// 	showSlide(slideIndex)
+	// }
+
+	// function minusSlide() {
+	// 	if (slideIndex <= 1) {
+	// 		slideIndex = slides.length + 1
+	// 	}
+	// 	slideIndex--
+	// 	currentSlideNumber.textContent = getZero(slideIndex)
+	// 	hideSlide()
+	// 	showSlide(slideIndex)
+	// }
+
+	// function hideSlide() {
+	// 	slides.forEach((item) => {
+	// 		item.classList.remove("show")
+	// 		item.classList.add("hide")
+	// 	})
+	// }
+
+	// function showSlide(i) {
+	// 	slides[i - 1].classList.remove("hide")
+	// 	slides[i - 1].classList.add("show")
+	// }
+
+	// nextBtn.addEventListener("click", () => {
+	// 	plusSlide()
+	// })
+
+	// prevBtn.addEventListener("click", () => {
+	// 	minusSlide()
+	// })
+
+	// hideSlide()
+	// showSlide(slideIndex)
+
+	//Слайдер курс
+	const slides = document.querySelectorAll(".offer__slide"),
+		prev = document.querySelector(".offer__slider-prev"),
+		next = document.querySelector(".offer__slider-next"),
+		total = document.querySelector("#total"),
+		current = document.querySelector("#current")
+	let slideIndex = 1
+
+	function showSlides(n) {
+		if (n > slides.length) {
+			slideIndex = 1
+		}
+
+		if (n < 1) {
+			slideIndex = slides.length
+		}
+
+		slides.forEach((item) => (item.style.display = "none"))
+
+		slides[slideIndex - 1].style.display = "block"
+
+		if (slides.length < 10) {
+			current.textContent = `0${slideIndex}`
+		} else {
+			current.textContent = slideIndex
+		}
+	}
+	showSlides(slideIndex)
+	if (slides.length < 10) {
+		total.textContent = `0${slides.length}`
+	} else {
+		total.textContent = slides.length
+	}
+
+	function plusSlides(n) {
+		showSlides((slideIndex += n))
+	}
+
+	prev.addEventListener("click", () => {
+		plusSlides(-1)
+	})
+
+	next.addEventListener("click", () => {
+		plusSlides(1)
 	})
 })
